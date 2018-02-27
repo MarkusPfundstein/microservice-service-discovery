@@ -7,7 +7,7 @@ COPY . ./
 EXPOSE 3000
 
 RUN apt-get update
-RUN apt-get install -y vim
+RUN apt-get install -y vim dnsutils
 RUN npm install
 
 CMD node index.js

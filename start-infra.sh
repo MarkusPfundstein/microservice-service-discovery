@@ -6,6 +6,7 @@ docker run -d \
   --network=$NETWORK \
 	--name=consul \
 	-p 8500:8500 \
+  -p 8600:8600 \
 	-e "SERVICE_IGNORE=true" \
 	consul
 
@@ -21,7 +22,6 @@ docker run -d \
 	-p 80:80 \
 	-p 8080:8080 \
 	-v $PWD/traefik.toml:/traefik.toml \
-	-e "SERVICE_IGNORE=true" \
 	containous/traefik:experimental
 
 sh start-app.sh $NETWORK
