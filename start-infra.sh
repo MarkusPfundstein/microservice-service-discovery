@@ -22,6 +22,15 @@ docker run -d \
 	-p 80:80 \
 	-p 8080:8080 \
 	-v $PWD/traefik.toml:/traefik.toml \
+	-e "SERVICE_IGNORE=true" \
 	containous/traefik:experimental
+
+docker run -d \
+  --network=$NETWORK \
+  --name=rabbitmq \
+  -p 15672:15672 \
+  -p 5672:5672 \
+  -e "SERVICE_IGNORE=true" \
+  rabbitmq
 
 sh start-app.sh $NETWORK

@@ -87,7 +87,7 @@ const init = function(config, callback) {
       , password: config.password || config.username
       , connectionTimeout: config.timeout || 10000
       , authMechanism: 'AMQPLAIN'
-      , vhost: '/'
+      , vhost: config.vhost || '/'
       , heartbeat: 1
       , noDelay: true
       , ssl: config.ssl || {enabled: false}
