@@ -1,4 +1,5 @@
 docker run -d \
-	-e "SERVICE_TAGS=traefik.frontend.rule=Host:localhost;PathPrefixStrip:/app" \
+  --network=services \
+	-e "SERVICE_TAGS=traefik.frontend.passHostHeader=true,traefik.frontend.rule=Host:api.services.int;PathPrefixStrip:/app" \
 	-P \
 	app
