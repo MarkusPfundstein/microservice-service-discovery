@@ -32,5 +32,3 @@ docker run -d \
   -p 5672:5672 \
   -e "SERVICE_IGNORE=true" \
   rabbitmq
-
-sh start-app.sh $NETWORK
