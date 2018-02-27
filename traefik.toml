@@ -1,0 +1,9 @@
+logLevel = "DEBUG"
+
+[web]
+address = ":8080"
+
+[consulCatalog]
+endpoint = "172.17.0.1:8500"
+domain = "consul.local"
+prefix = "traefik"

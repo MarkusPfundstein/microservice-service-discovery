@@ -1,0 +1,33 @@
+version: "2"
+services:
+  consul:
+    image: consul
+    ports:
+      - "8500:8500"
+    labels:
+      SERVICE_IGNORE: "true"
+
+  registrator:
+    depends_on:
+      - consul
+    image: gliderlabs/registrator
+    command: -internal consul://172.17.0.1:8500
+    volumes:
+      - "/var/run/docker.sock:/tmp/docker.sock"
+
+  traefik:
+    depends_on:
+      - consul
+    image: containous/traefik:experimental
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "$PWD/traefik.toml:/traefik.toml"
+    labels:
+      SERVICE_IGNORE: "true"
+
+  app:
+    image: app
+    labels:
+      SERVICE_TAGS: "traefik.frontend.rule=Host:localhost;PathPrefixStrip:/app"
