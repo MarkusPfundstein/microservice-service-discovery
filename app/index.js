@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { createService, micro, rabbitmq } = require('./src');
+const { createService, api, rabbitmq } = require('./src');
 
 const onMessage = (message, service) => {
   console.log('got message');
@@ -12,41 +12,41 @@ const getEcho = async (req, res, service) => {
   let { called, messages } = service.getState();
   ++called;
   service.setState({ called });
-  return micro.send(res, 200, `yo ${req.params.name} - ${called}\n${JSON.stringify(messages, null, 2)}\n`);
+  return api.send(res, 200, `yo ${req.params.name} - ${called}\n${JSON.stringify(messages, null, 2)}\n`);
 };
 
+const observers = [
+  [
+    {
+      exchange: 'test-exchange',
+      routingKey: 'test.message',
+      queue: 'test-app',
+    },
+    onMessage,
+  ]
+];
+
+const routes = [
+    api.get('/echo/:name', getEcho),
+];
+
 createService({
-  name: 'app',
   plugins: [
     [rabbitmq, {
       host: 'rabbitmq',
       username: 'user',
-      vhost: '/vhost1'
+      vhost: '/vhost1',
+      observers
     }],
-    [micro, {
+    [api, {
       port: 3000,
+      routes
     }]
   ],
-  api: [
-    micro.route('GET', '/echo/:name', getEcho)
-  ],
-  state: {
+  initialState: {
     called: 0,
-    messages: [],
-  },
-  observers: [
-    rabbitmq.observer(
-      {
-        exchange: 'test-exchange',
-        routingKey: 'test.message',
-        queue: '{name}',
-      },
-      onMessage,
-    ),
-  ],
-  emitters: [
-
-  ],
+    messages: []
+  }
 })
   .then(() => console.log('service running'))
   .catch(e => console.error(e));

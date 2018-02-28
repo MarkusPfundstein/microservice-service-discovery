@@ -112,11 +112,7 @@ const init = function(config, callback) {
     });
 
     connection.on('error', function (err) {
-      if (connected) {
-        emitError(err);
-      } else {
-        callback(err);
-      }
+      emitError(err);
     });
 
   }

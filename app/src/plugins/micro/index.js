@@ -7,17 +7,17 @@ const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
 
 const _registeredRoutes = [];
 
-const onRequest = async (req, res) => {
+const _onRequest = async (req, res) => {
   for (let routeFn of _registeredRoutes) {
     const result = await routeFn(req, res);
     if (result || res.headersSent) {
       return result;
     }
   }
-  return false;
+  return micro.send(res, 404);
 };
 
-const registerRoute = (service, method, path, callback) => {
+const _registerRoute = (service, method, path, callback) => {
   if (!R.find(x => x.toUpperCase(), METHODS)) {
     throw new Error(`${method} not supported`);
   }
@@ -35,18 +35,25 @@ const registerRoute = (service, method, path, callback) => {
   _registeredRoutes.push(routeFn);
 };
 
+const init = async (config, service) => {
+  const server = micro(async (req, res) => await _onRequest(req, res));
+  await server.listen(config.port || 3000);
+  (config.routes || []).map(f => f(service));
+};
+
+const route = (method, path, callback) => (service) => {
+  return _registerRoute(service, method, path, callback);
+};
+
+const _shorthandFunctions = R.zipObj(
+  METHODS.map(R.toLower).map(m => m === 'delete' ? 'del' : m),
+  METHODS.map(m => (path, callback) => route(m, path, callback))
+);
+
 module.exports = {
-  init(config) {
-    return new Promise((resolve, reject) => {
-      const server = micro(async (req, res) => await onRequest(req, res));
-      server.listen(config.port || 3000, error => error != null ? reject(error) : resolve(server));
-    });
-  },
-  route(method, path, callback) {
-    return (service) => registerRoute(service, method, path, callback);
-  },
-  send: micro.send,
-  buffer: micro.buffer,
-  json: micro.json
+  init,
+  route,
+  ...micro,
+  ..._shorthandFunctions,
 };
 
