@@ -8,5 +8,5 @@ module.exports = {
   MicroService,
   createService,
   rabbitmq: require('./plugins/rabbitmq'),
-  api: require('./plugins/micro')
+  api: require('./plugins/api')
 };

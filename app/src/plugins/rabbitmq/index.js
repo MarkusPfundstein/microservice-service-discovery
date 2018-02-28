@@ -20,7 +20,6 @@ const _makeObserver = (service, { exchange, routingKey, queue }, callback) => {
 };
 
 const _makeEmitter = (service, { exchange, routingKey }, emitterName) => {
-  console.log('assign', emitterName);
   service.assignEmitter(emitterName, (value) => {
     broker.send(exchange, routingKey, value);
   });

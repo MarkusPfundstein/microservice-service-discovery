@@ -79,7 +79,7 @@ function isEnabled() {
   return !disabled;
 }
 
-const init = function(config, callback) {
+const init = (config, callback) => new Promise(resolve => {
   if (connection === null) {
     emitInfo('initialize with config: ' + JSON.stringify(config));
     connection = amqp.createConnection({
@@ -107,8 +107,8 @@ const init = function(config, callback) {
       // only call callback if we have one
       // AND
       // if its the first time we connect
-      if (callback && !connected) {
-        callback(null, connection);
+      if (!connected) {
+        resolve(connection);
       }
       connected = true;
     });
@@ -116,11 +116,10 @@ const init = function(config, callback) {
     connection.on('error', function (err) {
       emitError(err);
     });
-
+  } else {
+    resolve(connection);
   }
-
-  return this;
-};
+});
 
 const _getExchange = function (name, callback) {
   if (exchanges[name] === undefined) {
