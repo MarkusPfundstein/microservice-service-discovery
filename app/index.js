@@ -1,26 +1,12 @@
 /* eslint-disable no-console */
 const { createService, api, rabbitmq } = require('./src');
 
-const loggedRoute = (handler) => (service) => async (req, res, ...rest) => {
-	console.log(`request for url: ${req.url}`);
-	return handler(service)(req, res, ...rest);
-}
-
+/* rabbitMq config */
 const onMessage = (service) => (message) => {
   console.log('got message', message);
   service.setState({
     messages: [...service.getState().messages, message]
   });
-};
-
-const getEcho = (service) => async (req, res) => {
-  let { called, messages } = service.getState();
-  ++called;
-  service.setState({ called });
-
-  service.emitEchoCall({ from: req.params.name, url: req.url});
-
-  return api.send(res, 200, `yo ${req.params.name} - ${called}\n${JSON.stringify(messages, null, 2)}\n`);
 };
 
 const subscriptions = [
@@ -40,10 +26,29 @@ const emitters = [
   }
 ];
 
+/* api config */
+
+// write a middleware for routes (based on micro)
+const loggedRoute = (handler) => (service) => async (req, res, ...rest) => {
+	console.log(`request for url: ${req.url}`);
+	return await handler(service)(req, res, ...rest);
+}
+
+const getEcho = (service) => async (req, res) => {
+  let { called, messages } = service.getState();
+  ++called;
+  service.setState({ called });
+
+  service.emitEchoCall({ from: req.params.name, url: req.url});
+
+  return api.send(res, 200, `yo ${req.params.name} - ${called}\n${JSON.stringify(messages, null, 2)}\n`);
+};
+
 const routes = [
     api.get('/echo/:name', loggedRoute(getEcho))
 ];
 
+/* setup service */
 createService({
   plugins: [
     rabbitmq({
@@ -53,7 +58,7 @@ createService({
       subscriptions,
       emitters,
       // onInfo: console.log,
-      // onError: console.error
+      onError: console.error
     }),
     api({
       port: 3000,
