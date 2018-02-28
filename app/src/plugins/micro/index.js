@@ -35,7 +35,7 @@ const _registerRoute = (service, method, path, callback) => {
   _registeredRoutes.push(routeFn);
 };
 
-const init = async (config, service) => {
+const init = (config) => async (service) => {
   const server = micro(async (req, res) => await _onRequest(req, res));
   await server.listen(config.port || 3000);
   (config.routes || []).map(f => f(service));
@@ -45,15 +45,14 @@ const route = (method, path, callback) => (service) => {
   return _registerRoute(service, method, path, callback);
 };
 
-const _shorthandFunctions = R.zipObj(
+
+
+module.exports = init;
+module.exports.route = route;
+// expose shorthand methods .get , .post etc. 
+R.zip(
   METHODS.map(R.toLower).map(m => m === 'delete' ? 'del' : m),
   METHODS.map(m => (path, callback) => route(m, path, callback))
-);
-
-module.exports = {
-  init,
-  route,
-  ...micro,
-  ..._shorthandFunctions,
-};
-
+).map(([m, fn]) => module.exports[m] = fn);
+// expose all micro functions so that we have access to api
+R.forEachObjIndexed((fn, key) => key != 'default' && (module.exports[key] = fn), micro);

@@ -25,8 +25,10 @@ let disabled = false;
 // -> so that we don't have to log from within
 const brokerEmitter = new EventEmitter();
 
+const isPrd = process.env.node_env === 'production';
+
 const log = {
-  e: console.error,
+  e: isPrd ? () => true : console.error
 };
 
 function emitError(str) {
@@ -295,12 +297,14 @@ const send = function (exchange, routingKey, message) {
   });
 };
 
-module.exports.init = init;
-module.exports.unsubscribe = unsubscribe;
-module.exports.destroy = destroy;
-module.exports.subscribe = subscribe;
-module.exports.send = send;
-module.exports.enable = enableBroker;
-module.exports.disable = disableBroker;
-module.exports.isEnabled = isEnabled;
-module.exports.emitter = brokerEmitter;
+module.exports = {
+  init,
+  unsubscribe,
+  destroy,
+  subscribe,
+  send,
+  enableBroker,
+  disableBroker,
+  isEnabled,
+  emitter: brokerEmitter,
+};

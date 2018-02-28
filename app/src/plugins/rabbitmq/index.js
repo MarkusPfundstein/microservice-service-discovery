@@ -20,28 +20,29 @@ const _makeObserver = (service, { exchange, routingKey, queue }, callback) => {
 };
 
 const _makeEmitter = (service, { exchange, routingKey }, emitterName) => {
+  console.log('assign', emitterName);
   service.assignEmitter(emitterName, (value) => {
     broker.send(exchange, routingKey, value);
   });
 };
 
-const init = async (pluginConfig, service) => {
-  if (pluginConfig.debug === true) {
-    broker.on('error', console.error);
-    broker.on('info', console.log);
+const init = (pluginConfig) => async (service) => {
+  if (typeof pluginConfig.onError === 'function') {
+    broker.emitter.on('error', pluginConfig.onError);
+  }
+  if (typeof pluginConfig.onInfo === 'function') {
+    broker.emitter.on('info', pluginConfig.onInfo);
   }
 
   await broker.init(pluginConfig);
-  const observers = pluginConfig.observers || [];
+  const subscriptions = pluginConfig.subscriptions || [];
   const emitters = pluginConfig.emitters || [];
-  for (let [conf, emitFn] of observers) {
-    _makeObserver(service, conf, emitFn);
+  for (let conf of subscriptions) {
+    _makeObserver(service, conf, conf.handler);
   }
-  for (let [conf, emitterName] of emitters) {
-    _makeEmitter(service, conf, emitterName);
+  for (let conf of emitters) {
+    _makeEmitter(service, conf, conf.emitter);
   }
 };
 
-module.exports = {
-  init,
-};
+module.exports = init;

@@ -12,8 +12,8 @@ class MicroService {
   }
 
   async _initializePlugins(plugins) {
-    for (let [plugin, pluginConfig] of plugins) {
-      await plugin.init(pluginConfig, this);
+    for (let initFun of plugins) {
+      await initFun(this);
     }
   }
 

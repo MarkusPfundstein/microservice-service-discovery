@@ -1,8 +1,11 @@
-var events = require('events');
+const events = require('events');
+const process = require('process');
+
+const isPrd = process.env.node_env === 'production';
 
 const log = {
-  e: console.error,
-  d: console.log,
+  e: isPrd ? () => true : console.error,
+  d: isPrd ? () => true : console.log,
 };
 
 function Subscription(broker, exchange, routingKey, queueName, userConf, eventPublisher, neverDisable = false, extraOptions = {}) {
