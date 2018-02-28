@@ -15,7 +15,7 @@ const _makeObserver = (service, { exchange, routingKey, queue }, callback) => {
   );
   subscription.start();
   subscription.onMessage((message/*, h, i, metaData */) => {
-    callback(message, service);
+    callback(service)(message);
   });
 };
 

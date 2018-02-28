@@ -28,7 +28,7 @@ const _registerRoute = (service, method, path, callback) => {
     const { params, query } = getParamsAndQuery(parsedRoute, req.url);
 
     if (params && req.method === method) {
-      return callback(Object.assign(req, { params, query}), res, service);
+      return callback(service)(Object.assign(req, { params, query}), res);
     }
   };
 
@@ -45,11 +45,9 @@ const route = (method, path, callback) => (service) => {
   return _registerRoute(service, method, path, callback);
 };
 
-
-
 module.exports = init;
 module.exports.route = route;
-// expose shorthand methods .get , .post etc. 
+// expose shorthand methods .get , .post etc.
 R.zip(
   METHODS.map(R.toLower).map(m => m === 'delete' ? 'del' : m),
   METHODS.map(m => (path, callback) => route(m, path, callback))

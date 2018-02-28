@@ -1,18 +1,18 @@
 /* eslint-disable no-console */
 const { createService, api, rabbitmq } = require('./src');
 
-const onMessage = (message, service) => {
+const onMessage = (service) => (message) => {
   console.log('got message');
   service.setState({
     messages: [...service.getState().messages, message]
   });
 };
 
-const getEcho = async (req, res, service) => {
+const getEcho = (service) => async (req, res) => {
   let { called, messages } = service.getState();
   ++called;
   service.setState({ called });
-  service.gotEchoCall({ from: req.params.name });
+  service.gotEchoCall({ from: req.params.name, called });
   return api.send(res, 200, `yo ${req.params.name} - ${called}\n${JSON.stringify(messages, null, 2)}\n`);
 };
 
