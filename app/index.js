@@ -27,7 +27,7 @@ const observers = [
 ];
 
 const routes = [
-    api.get('/echo/:name', getEcho),
+    api.get('/echo/:name', getEcho)
 ];
 
 createService({
